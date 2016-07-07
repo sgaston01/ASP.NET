@@ -1,0 +1,207 @@
+USE [GameUp]
+GO
+/****** Object:  StoredProcedure [dbo].[gp_addRegisteredUser]    Script Date: 11/07/2007 10:18:30 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+  ALTER PROCEDURE [dbo].[gp_addRegisteredUser] 
+@username varchar(20), 
+@password varchar(20),
+@country  varchar(30),
+@zip      int , 
+@age      varchar(15),
+@email    varchar(50),
+@newgroup bit,
+@favorite_genre varchar(30),
+@date datetime
+as 
+    Begin
+    Insert Into registered_user (username, password, country,zip,
+                                age,email,newgroup,favorite_genre,date)
+    Values (@username,@password,@country,@zip,@age,@email,@newgroup,@favorite_genre,@date)
+     Select @username, @password
+    end
+
+
+USE [GameUp]
+GO
+/****** Object:  StoredProcedure [dbo].[gp_addRegisteredUser]    Script Date: 11/07/2007 10:18:30 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+  ALTER PROCEDURE [dbo].[gp_addRegisteredUser] 
+@username varchar(20), 
+@password varchar(20),
+@country  varchar(30),
+@zip      int , 
+@age      varchar(15),
+@email    varchar(50),
+@newgroup bit,
+@favorite_genre varchar(30),
+@date datetime
+as 
+    Begin
+    Insert Into registered_user (username, password, country,zip,
+                                age,email,newgroup,favorite_genre,date)
+    Values (@username,@password,@country,@zip,@age,@email,@newgroup,@favorite_genre,@date)
+     Select @username, @password
+    end
+
+
+
+USE [GameUp]
+GO
+/****** Object:  StoredProcedure [dbo].[gp_FindGame]    Script Date: 11/07/2007 10:20:38 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+    ALTER PROCEDURE [dbo].[gp_FindGame] ( @title varchar(30) ) as
+
+    Begin
+  
+   --Declare @title as varchar(30)
+
+   select * from gamelocation
+   where gamename like @title + '%'
+
+   -- Insert Into UserTable (username, password)
+    --Values (@username,@password)
+    -- Select @username, @password
+    end
+
+
+
+
+USE [GameUp]
+GO
+/****** Object:  StoredProcedure [dbo].[gp_ShowAllGamesByPaging]    Script Date: 11/07/2007 10:21:07 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER  procedure [dbo].[gp_ShowAllGamesByPaging] ( @i int)as
+
+DECLARE  @INDEX   INT
+DECLARE  @COUNTER INT 
+DECLARE  @DONE    BIT
+DECLARE  @INSET BIT 
+DECLARE  @NAME    VARCHAR(50)
+DECLARE  @LARGE   VARCHAR(50)
+DECLARE  @MEDIUM  VARCHAR(50)
+DECLARE  @SMALL   VARCHAR(50)
+DECLARE  @HTML    VARCHAR(80)
+DECLARE  @RATE    FLOAT
+DECLARE  @GENRE   VARCHAR(30)
+DECLARE  @COUNT   INT
+DECLARE  @START_INDEX int
+SET @INSET = 0
+SET @DONE  = 0
+SET @START_INDEX = @i
+SET @INDEX = 0     -- THE STARTING ROW WE ARE LOOKING FOR 
+SET @COUNTER = 0   -- THE NUMBER OF ROWS TO FETCH 
+
+/*
+  <Table>
+    <GameName>Jewel Quest</GameName>
+    <LargeImage />
+    <MediumImage />
+    <SmallImage>Images/jewelquest_40x40.gif</SmallImage>
+    <HtmlName>http://www.gamehouse.com/urldownload.jsp?game=JewelQuest&amp;AID=6314</HtmlName>
+    <count>1301</count>
+  </Table>
+*/
+Create table #t ( GameName varchar(50),
+                  LargeImage varchar(50), 
+                  MediumImage varchar(50),
+                  SmallImage varchar (50),
+                  HtmlName varchar(80) ,
+                  [count]  int ,
+                  rate float, 
+                  genre varchar(40)  
+                  )
+
+DECLARE  MY_CURSOR CURSOR FOR 
+Select G.gamename , G.largeimage, G.mediumimage, G.smallimage,G.htmlname,G.[count] , R.rate , R.genre
+from gamelocation G  , rates R
+where G.gamename = R.title
+
+
+
+--THE RESULT SET ITEM  
+Open MY_CURSOR 
+FETCH NEXT FROM MY_CURSOR
+INTO @NAME , @LARGE, @MEDIUM , @SMALL, @HTML , @COUNT , @RATE , @GENRE
+WHILE @@FETCH_STATUS = 0  AND @DONE = 0
+BEGIN
+
+IF @START_INDEX = @INDEX
+BEGIN 
+-- select rate from rates
+-- where @Name=title 
+-- learn how to use EXEC 
+
+
+      INSERT INTO #t Values(@Name ,  @LARGE, @MEDIUM ,@SMALL, @HTML , @COUNT , @RATE , @GENRE)
+      --SELECT * from #t 
+      SET @COUNTER = @COUNTER + 1
+      SET @INSET = 1 
+END
+--SELECT GAMENAME FROM GAMELOCATION
+SET @INDEX  = @INDEX + 1
+--SET @INSET = 1
+
+Fetch next from MY_CURSOR
+INTO @NAME, @LARGE, @MEDIUM , @SMALL, @HTML ,@COUNT , @RATE , @GENRE
+IF (@INSET = 1)
+BEGIN
+      INSERT INTO #t Values(@Name,@LARGE ,@MEDIUM , @SMALL, @HTML ,@COUNT , @RATE , @GENRE )
+      --SELECT * from #t 
+      SET @COUNTER = @COUNTER + 1
+END
+
+--SELECT GAMENAME FROM GAMELOCATION
+
+   IF (@COUNTER = 10)
+     BEGIN
+     SET @DONE = 1
+     Select * from #t
+     END
+END
+CLOSE MY_CURSOR
+DEALLOCATE MY_CURSOR
+Drop table #t
+
+
+
+
+USE [GameUp]
+GO
+/****** Object:  StoredProcedure [dbo].[gp_SimpleSurvey]    Script Date: 11/07/2007 10:21:30 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+ALTER procedure [dbo].[gp_SimpleSurvey]
+@selected_choice varchar(20),
+@date datetime,
+@host varchar(20)
+as 
+
+Begin 
+  Insert into simpleSurvey (selected_choice,date,host)
+  values (@selected_choice,@date,@host)
+End 
+
+

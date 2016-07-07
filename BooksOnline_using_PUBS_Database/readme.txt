@@ -1,0 +1,1 @@
+Partial work exercise to enhance my VB.NET knowledge at EveryContractor.com.
